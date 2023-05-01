@@ -1,26 +1,33 @@
-import { View, Text, FlatList, RefreshControl, StyleSheet } from 'react-native'
+import { View, Text, FlatList, RefreshControl, StyleSheet, TouchableOpacity } from 'react-native'
 import React, { useCallback, useEffect, useState } from 'react'
 import  { Apifetch } from '../services/axios'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import Picker from '../components/Picker'
 import ActivityIndicate from '../components/Activityind'
+import SearchBar from '../components/Picker'
+import { useNavigation } from '@react-navigation/native'
 
 const HomeScreen = () => {
-    const [Countries, setCountries] = useState([])
-    const [Currency, setCurrencies] = useState('')
-    const [Loading, setLoading] = useState(false)
-    useEffect(() => {
-       fetchCountries()
-    }, [Countries])
+  const navigation = useNavigation();
+  const [Countries, setCountries] = useState([])
+  const [Loading, setLoading] = useState(false);
 
-    const fetchCountries = useCallback(async () => {
-      setLoading(true)
+  useEffect(() => {
+      fetchCountries()
+  }, [Loading])
+
+    const fetchCountries = async () => {
+      /*
+      * Will fetch all countries if async Store is empty
+      * clear async store if any errors are encountered
+      **/
       try{
           const StoreData =await AsyncStorage.getItem('CountryData')
           
           if(StoreData!==null){
-            console.log(StoreData);
             setCountries(JSON.parse(StoreData));
+            setLoading(false)
+
           } else{
             const [data,err] = await Apifetch('all');
 
@@ -30,89 +37,67 @@ const HomeScreen = () => {
               setLoading(false)
 
             }else {
-              console.log('error fetching countries');
-              AsyncStorage.clear();
               setLoading(false)
+              AsyncStorage.clear();
 
             }
           }
       }catch(error){
-        console.log(error);
         setLoading(false)
+        AsyncStorage.clear();
 
       }
-      
-      },[])
-      const handleSelectCountry = (country) => {
-        onSelectCountry(country);
-        };
-    const CountryList = ({ data, onSelectCountry }) => {
-       
-      const countriesList = countries.item
-      //minimize the list of datasets
-
-      for (const currencies in countriesList.currencies){
-        setCurrencies(countriesList.currencies[currencies])
-      }
-        const renderItem = ({ item }) => {
-        return(
-        <TouchableOpacity onPress={() => handleSelectCountry(item)} style={{flex:1,backgroundColor:'#AFD3E2',padding:10,marginBottom:10,borderRadius:10}}>
-          <Text style={styles.TextStyle}>{countriesList.name.common}</Text>
-          <View style={{flexDirection:'row',width:'100%',justifyContent:'space-between'}}>
-          <Text style={styles.TextStyle}>{Currency.name}</Text>
-          <Text style={styles.TextStyle}>{Currency.symbol}</Text>
-          </View>
-          <Text style={styles.TextStyle}>{countriesList.capital}</Text>
-        </TouchableOpacity>
-        );
     }
-      return (
-          <FlatList
-              data={data}
-              renderItem={renderItem}
-              keyExtractor={(item) => item.alpha2Code}
-          />
-      );
-  };
-
       const onRefresh = () => {
         //set isRefreshing to true
         fetchCountries()
+        setLoading(true)
         // and set isRefreshing to false at the end of your callApiMethod()
       }
+      
       const renderItem = (countries,i) => { 
-        const countriesList = countries.item
+        const countriesList = countries?.item;
         //minimize the list of datasets
-
-        for (const currencies in countriesList.currencies){
-          setCurrencies(countriesList.currencies[currencies])
-        }
-
+        const NativeNameList =countriesList.currencies && Object.keys(countriesList.currencies).map((code)=>{
+          const currencyData= countriesList?.currencies[code]
+          return(
+            <>
+              <View key={i} style={{flexDirection:'row',width:'90%',justifyContent:'space-between'}}>
+                <Text style={styles.TextStyle}>{currencyData?.name}</Text>
+               <Text style={styles.TextStyle}>{currencyData?.symbol}</Text>
+              </View>
+              </>
+          )
+        })
         return(
-        <View style={{flex:1,backgroundColor:'#AFD3E2',padding:10,marginBottom:10,borderRadius:10}}>
-          <Text style={styles.TextStyle}>{countriesList.name.common}</Text>
-          <View style={{flexDirection:'row',width:'100%',justifyContent:'space-between'}}>
-          <Text style={styles.TextStyle}>{Currency.name}</Text>
-          <Text style={styles.TextStyle}>{Currency.symbol}</Text>
+        <TouchableOpacity onPress={()=>navigation.navigate('CountryDetails',{countriesList})} style={{flex:1,width:'95%',alignSelf:'center',backgroundColor:'#D6E4E5',padding:10,marginBottom:15,borderRadius:10}}>
+          <Text key={(countriesList?.name?.common).toString()} style={styles.TextStyle}>{countriesList?.name?.common}</Text>
+          <View>
+            {NativeNameList}
           </View>
-          <Text style={styles.TextStyle}>{countriesList.capital}</Text>
-        </View>
+          <Text style={styles.TextStyle}>{countriesList?.capital}</Text>
+          <Text style={styles.TextStyle}>{countriesList?.region}</Text>
+        </TouchableOpacity>
         )
        }
+
+       if(Loading){
+        return <ActivityIndicate isLoading={Loading}/>
+       }
+
   return (
-    <View style={{flex:1,padding:10}}>
-      {/* <ActivityIndicate isLoading={Loading}/> */}
-      <FlatList
-      data={Countries}
-      scrollsToTop={true}
-      extraData={Countries}
+    <View style={{flex:1,padding:10,backgroundColor:'#ffff'}}>
       
-      keyExtractor={(_,index) => index}
-      renderItem={renderItem}
-      ListHeaderComponent={Picker}
-      stickyHeaderIndices={[0]}
-      onRefresh={onRefresh}
-      refreshing={Loading}
+      <FlatList
+        data={Countries}
+        scrollsToTop={true}
+        extraData={Countries}
+        keyExtractor={(_,index) => index}
+        renderItem={renderItem}
+        ListHeaderComponent={<SearchBar setSearchValue={setCountries} />}
+        stickyHeaderIndices={[0]}
+        onRefresh={onRefresh}
+        refreshing={Loading}
       />
     </View>
   )

@@ -3,7 +3,7 @@ import React from 'react'
 
 const ActivityIndicate = (isLoading,isFetching) => {
     return (
-        <View style={{backgroundColor:'transparent'}}>
+        <View style={{flex:1,alignItems:'center',justifyContent:'center'}}>
           {(isLoading) && (
             <ActivityIndicator
               size="large"
