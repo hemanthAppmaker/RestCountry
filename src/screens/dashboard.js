@@ -81,7 +81,6 @@ const HomeScreen = () => {
        if(Loading){
         return <ActivityIndicate isLoading={Loading}/>
        }
-// console.log((SearchData.length!==0 && SearchData));
 
   return (
     <View style={{flex:1,padding:10,backgroundColor:'#ffff'}}>
