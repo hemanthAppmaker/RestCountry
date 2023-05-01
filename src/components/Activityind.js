@@ -1,17 +1,18 @@
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native'
 import React from 'react'
 
-const ActivityIndicate = (isLoading,isFetching) => {
+const ActivityIndicate = ({isLoading}) => {
+
+    if(!isLoading) return;
+
     return (
-        <View style={{flex:1,alignItems:'center',justifyContent:'center'}}>
-          {(isLoading) && (
+        <View style={{justifyContent:'center'}}>
             <ActivityIndicator
-              size="large"
+              size="small"
               animating={true}
-              color={'#146C94'}
+              color={'#EB6440'}
               style={styles.activityIndicator}
             />
-          )}
         </View>
       )
 }

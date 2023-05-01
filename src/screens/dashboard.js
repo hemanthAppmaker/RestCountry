@@ -14,46 +14,47 @@ const HomeScreen = () => {
 
   useEffect(() => {
       fetchCountries()
-  }, [Loading])
+  }, [Countries])
 
-    const fetchCountries = async () => {
-      /*
-      * Will fetch all countries if async Store is empty
-      * clear async store if any errors are encountered
-      **/
-      try{
-          const StoreData =await AsyncStorage.getItem('CountryData')
-          
-          if(StoreData!==null){
-            setCountries(JSON.parse(StoreData));
+  const fetchCountries = useCallback(async () => {
+    /*
+    * Will fetch all countries if async Store is empty
+    * clear async store if any errors are encountered
+    **/
+    try{
+        const StoreData =await AsyncStorage.getItem('CountryData')
+        
+        if(StoreData!==null){
+          setCountries(JSON.parse(StoreData));
+          setLoading(false)
+
+        } else{
+          const [data,err] = await Apifetch('all')|| [];
+
+          if(data){
+            setCountries(data);
+            await AsyncStorage.setItem('CountryData',JSON.stringify(data));
             setLoading(false)
 
-          } else{
-            const [data,err] = await Apifetch('all');
+          }else {
+            setLoading(false)
+            AsyncStorage.clear();
 
-            if(data){
-              setCountries(data);
-              await AsyncStorage.setItem('CountryData',JSON.stringify(data));
-              setLoading(false)
-
-            }else {
-              setLoading(false)
-              AsyncStorage.clear();
-
-            }
           }
-      }catch(error){
-        setLoading(false)
-        AsyncStorage.clear();
+        }
+    }catch(error){
+      setLoading(false)
+      AsyncStorage.clear();
 
-      }
     }
-      const onRefresh = () => {
-        //set isRefreshing to true
-        fetchCountries()
-        setLoading(true)
-        // and set isRefreshing to false at the end of your callApiMethod()
-      }
+  },[])
+
+    const onRefresh = () => {
+      //set isRefreshing to true
+      fetchCountries()
+      setLoading(true)
+      // and set isRefreshing to false at the end of your callApiMethod()
+    }
       
       const renderItem = (countries,i) => { 
         const countriesList = countries?.item;
@@ -94,6 +95,8 @@ const HomeScreen = () => {
         extraData={Countries}
         keyExtractor={(_,index) => index}
         renderItem={renderItem}
+        maxToRenderPerBatch={10}
+        updateCellsBatchingPeriod={50}
         ListHeaderComponent={<SearchBar setSearchValue={setCountries} />}
         stickyHeaderIndices={[0]}
         onRefresh={onRefresh}

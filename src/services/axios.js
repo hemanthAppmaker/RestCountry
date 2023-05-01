@@ -16,7 +16,7 @@ const api= axios.create({
         return [countries,false]
     }catch(err){
         console.log('error fetch');
-        ToastAndroid.show('Error Occured, please try again',)
+        ToastAndroid.show('Error Occured, please try again',ToastAndroid.SHORT)
         return [false,err]
     }
 }
