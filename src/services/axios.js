@@ -15,8 +15,8 @@ const api= axios.create({
         const countries= response.data
         return [countries,false]
     }catch(err){
-        console.log('error fetch');
-        ToastAndroid.show('Error Occured, please try again',ToastAndroid.SHORT)
+        let err_in_endpoint=url.split('/')
+        ToastAndroid.show('Invalid '+err_in_endpoint[0]+' ,please try again',ToastAndroid.SHORT)
         return [false,err]
     }
 }

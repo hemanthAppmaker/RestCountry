@@ -7,8 +7,6 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import HomeScreen from './src/screens/dashboard';
 import CountryDetails from './src/screens/CountryDetails';
 
-
-
 const Stack = createNativeStackNavigator();
 
 function App() {

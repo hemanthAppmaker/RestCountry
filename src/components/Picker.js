@@ -37,7 +37,7 @@ import ActivityIndicate from './Activityind';
               debounce(async(inputValue) => {
                 if(!inputValue){
                   setisLoading(false);
-                  setInputValue([]);
+                  setInputValue('');
                   return
                 }
                 try {
@@ -48,12 +48,12 @@ import ActivityIndicate from './Activityind';
 
                   }
                 } catch (error) {
-                  console.log('request Failed: ' + error);
+                  setSearchValue([]);
                   setisLoading(false);
 
                 } 
-              }, 1500),
-            []
+              }, 500),
+            [inputValue]
             )
 
         const onChangeText = (e) => { 
@@ -73,6 +73,8 @@ import ActivityIndicate from './Activityind';
                 onKeyPress={({ nativeEvent }) => {
                   if (nativeEvent.key === 'Backspace') {
                     setInputValue('')
+                    setisLoading(true);
+
                   }
                 }}  
               />
